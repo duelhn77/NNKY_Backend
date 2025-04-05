@@ -1,2 +1,53 @@
+# --- 環境変数・設定ファイル（セキュリティ） ---
 .env
-.env.local
+.env.*
+*.crt
+*.key
+
+# --- Pythonキャッシュ関連 ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# --- データベース・モデル出力など ---
+*.db
+*.sqlite3
+*.pkl
+*.h5
+*.log
+
+# --- 仮想環境（venv/やantenv/など） ---
+venv/
+env/
+antenv/
+
+# --- VSCode やIDE関連 ---
+.vscode/
+.idea/
+
+# --- OS固有のファイル ---
+.DS_Store
+Thumbs.db
+
+# --- テスト関連 ---
+htmlcov/
+.coverage
+.cache/
+.pytest_cache/
+
+# --- FastAPIドキュメント出力系（任意） ---
+openapi.json
+docs/
+
+# --- その他（誤って追加されがちなもの） ---
+*.bak
+*.swp
+*.tmp
+
+# --- __oryx_packages__（Azureの自動生成フォルダ） ---
+__oryx_packages__/
+
+# --- デプロイ成果物があれば除外 ---
+output.tar.gz
+
