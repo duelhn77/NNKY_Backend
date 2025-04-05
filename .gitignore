@@ -1,8 +1,2 @@
 .env
 .env.local
-# Next.js build
-.next/
-# Node modules
-node_modules/
-# TypeScript
-*.tsbuildinfo
