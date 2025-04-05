@@ -2,13 +2,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.quickdiagnose import router as quickdiagnose_router
+import os
 
 app = FastAPI()
+
+# 環境変数からフロントエンドのURLを取得
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 # CORS設定（Next.jsなどからの呼び出し対応）
 origins = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    FRONTEND_URL  # 環境変数から取得したURLを追加
 ]
 
 app.add_middleware(
