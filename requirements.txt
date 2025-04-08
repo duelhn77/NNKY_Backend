@@ -12,3 +12,4 @@ openai==1.57.2
 aiofiles==24.1.0
 Pillow==11.0.0
 python-multipart==0.0.20
+mysql-connector-python==9.2.0
