@@ -1,3 +1,22 @@
+import mysql.connector
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # .envファイルを読み込む
+
+conn = mysql.connector.connect(
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    database=os.getenv("DB_NAME"),
+    ssl_ca=os.getenv("DB_SSL_CA")  # 必要であれば
+)
+
+print("✅ MySQL接続に成功しました！")
+conn.close()
+
+
+
 # from sqlalchemy import create_engine
 # # import sqlalchemy
 
@@ -12,39 +31,39 @@
 # print("path:", path)
 # engine = create_engine("sqlite:///CRM.db", echo=True)
 
-from sqlalchemy import create_engine
-import os
-from pathlib import Path
-from dotenv import load_dotenv
-import pymysql
+# from sqlalchemy import create_engine
+# import os
+# from pathlib import Path
+# from dotenv import load_dotenv
+# import pymysql
 
-# 環境変数の読み込み
-base_path = Path(__file__).parents[1] #backendディレクトリへのパス
-env_path = base_path / '.env'
-load_dotenv(dotenv_path=env_path)
+# # 環境変数の読み込み
+# base_path = Path(__file__).parents[1] #backendディレクトリへのパス
+# env_path = base_path / '.env'
+# load_dotenv(dotenv_path=env_path)
 
-# データベース接続情報
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT')
-DB_NAME = os.getenv('DB_NAME')
+# # データベース接続情報
+# DB_USER = os.getenv('DB_USER')
+# DB_PASSWORD = os.getenv('DB_PASSWORD')
+# DB_HOST = os.getenv('DB_HOST')
+# DB_PORT = os.getenv('DB_PORT')
+# DB_NAME = os.getenv('DB_NAME')
 
-#SSL証明書のパス
-ssl_cert = str('DigiCertGlobalRootCA.crt.pem')
+# #SSL証明書のパス
+# ssl_cert = str('DigiCertGlobalRootCA.crt.pem')
 
-# MySQLのURL構築
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# # MySQLのURL構築
+# DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# エンジンの作成
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "ssl":{
-            "ssl_ca":ssl_cert
-        }
-    },
-    echo=True,
-    pool_pre_ping=True,
-    pool_recycle=3600
-)
+# # エンジンの作成
+# engine = create_engine(
+#     DATABASE_URL,
+#     connect_args={
+#         "ssl":{
+#             "ssl_ca":ssl_cert
+#         }
+#     },
+#     echo=True,
+#     pool_pre_ping=True,
+#     pool_recycle=3600
+# )
