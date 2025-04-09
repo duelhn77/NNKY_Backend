@@ -4,6 +4,7 @@ from db_control.connect_MySQL import get_db
 from db_control import crud
 from pydantic import BaseModel, EmailStr
 from datetime import date
+from passlib.hash import bcrypt
 
 router = APIRouter()
 
@@ -31,3 +32,21 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         birth_date=user.birth_date
     )
     return {"message": "ユーザー登録が完了しました。", "user_id": new_user.user_id}
+
+# ログイン時の入力用スキーマ
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+@router.post("/login")
+def login_user(login: LoginRequest, db: Session = Depends(get_db)):
+    # DBからユーザーを検索
+    user = db.query(crud.User).filter(crud.User.email == login.email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="メールアドレスが登録されていません。")
+
+    # パスワード照合
+    if not bcrypt.verify(login.password, user.password):
+        raise HTTPException(status_code=401, detail="パスワードが間違っています。")
+
+    return {"message": "ログイン成功", "user_id": user.user_id}
