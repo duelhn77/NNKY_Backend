@@ -51,3 +51,4 @@ __oryx_packages__/
 # --- デプロイ成果物があれば除外 ---
 output.tar.gz
 
+uploads
