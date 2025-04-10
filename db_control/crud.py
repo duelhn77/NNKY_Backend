@@ -8,9 +8,38 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 import json
 import pandas as pd
-
+from passlib.hash import bcrypt
 from db_control.connect import engine
 from db_control.mymodels import Customers
+from db_control.mymodels import User
+from sqlalchemy.orm import Session
+from datetime import date
+
+
+# Frontendとのつなぎ込みで追加（4/10 なりさん）
+def find_user_by_email(email):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    try:
+        user = session.query(User).filter(User.email == email).first()
+        return user
+    finally:
+        session.close()
+
+def create_user(db: Session, name: str, name_kana: str, email: str, password: str, birth_date: date):
+    hashed_password = bcrypt.hash(password)  # ✅ここでハッシュ化！
+    new_user = User(
+        name=name,
+        name_kana=name_kana,
+        email=email,
+        password=hashed_password,
+        birth_date=birth_date
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
 
 
 def myinsert(mymodel, values):

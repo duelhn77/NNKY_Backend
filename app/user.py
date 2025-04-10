@@ -38,18 +38,39 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+# @router.post("/login")
+# def login_user(login: LoginRequest, db: Session = Depends(get_db)):
+#     # DBからユーザーを検索
+#     user = db.query(crud.User).filter(crud.User.email == login.email).first()
+#     if not user:
+#         raise HTTPException(status_code=401, detail="メールアドレスが登録されていません。")
+
+#     # パスワード照合
+#     if not bcrypt.verify(login.password, user.password):
+#         raise HTTPException(status_code=401, detail="パスワードが間違っています。")
+
+#     return {"message": "ログイン成功", "user_id": user.user_id}
+
 @router.post("/login")
 def login_user(login: LoginRequest, db: Session = Depends(get_db)):
-    # DBからユーザーを検索
+    print(f"🌐 ログイン試行 Email: {login.email}")
+
     user = db.query(crud.User).filter(crud.User.email == login.email).first()
     if not user:
+        print("🚫 該当するユーザーが見つかりません")
         raise HTTPException(status_code=401, detail="メールアドレスが登録されていません。")
 
-    # パスワード照合
+    print(f"✅ ユーザー発見: {user.email}")
+    print(f"🔐 入力PW: {login.password}")
+    print(f"🔐 登録PW(ハッシュ): {user.password}")
+
     if not bcrypt.verify(login.password, user.password):
+        print("🚫 パスワードが一致しません")
         raise HTTPException(status_code=401, detail="パスワードが間違っています。")
 
+    print("🎉 ログイン成功")
     return {"message": "ログイン成功", "user_id": user.user_id}
+
 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from db_control import auth  # JWT発行関数がここにある
