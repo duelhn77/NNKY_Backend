@@ -1,29 +1,31 @@
-from fastapi import FastAPI
-from app import user
-
-app = FastAPI()  # ← これが先に必要！
-
-app.include_router(user.router)
-
-
-# main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from app.quickdiagnose import router as quickdiagnose_router
+from pydantic import BaseModel
 import os
+import requests
+import json
 
+# ルーターのインポート
+from app import user
+from app.quickdiagnose import router as quickdiagnose_router
+
+# DB操作用
+from db_control import crud, mymodels
+from db_control.create_tables import init_db
+
+# アプリケーション作成
 app = FastAPI()
 
-# 環境変数からフロントエンドのURLを取得
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+# 🔧 テーブル作成（初回起動時のみ有効）
+init_db()
 
-# CORS設定（Next.jsなどからの呼び出し対応）
+# 🌐 CORS設定（フロントエンドとの連携用）
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    FRONTEND_URL  # 環境変数から取得したURLを追加
+    FRONTEND_URL
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -32,43 +34,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# クイック診断機能ルーターの登録
-app.include_router(quickdiagnose_router)
+# 🔗 各種ルーターを登録
+app.include_router(user.router)                # ユーザー登録・ログイン
+app.include_router(quickdiagnose_router)       # クイック診断
 
-
-
-# #以下Prcticalのオリジナル
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import requests
-import json
-from db_control import crud, mymodels
-
-# MySQLのテーブル作成
-from db_control.create_tables import init_db
-
-# # アプリケーション初期化時にテーブルを作成
-init_db()
-
+# -------------------------------------
+# 🧪 以下は Practical オリジナル機能（顧客管理）
+# -------------------------------------
 
 class Customer(BaseModel):
     customer_id: str
     customer_name: str
     age: int
     gender: str
-
-
-# # app = FastAPI()
-
-# # # CORSミドルウェアの設定
-# # app.add_middleware(
-# #     CORSMiddleware,
-# #     allow_origins=["*"],
-# #     allow_credentials=True,
-# #     allow_methods=["*"],
-# #     allow_headers=["*"],
-# # )
 
 
 @app.get("/")
@@ -79,13 +57,9 @@ def index():
 @app.post("/customers")
 def create_customer(customer: Customer):
     values = customer.dict()
-    tmp = crud.myinsert(mymodels.Customers, values)
+    crud.myinsert(mymodels.Customers, values)
     result = crud.myselect(mymodels.Customers, values.get("customer_id"))
-
-    if result:
-        result_obj = json.loads(result)
-        return result_obj if result_obj else None
-    return None
+    return json.loads(result) if result else None
 
 
 @app.get("/customers")
@@ -93,30 +67,23 @@ def read_one_customer(customer_id: str = Query(...)):
     result = crud.myselect(mymodels.Customers, customer_id)
     if not result:
         raise HTTPException(status_code=404, detail="Customer not found")
-    result_obj = json.loads(result)
-    return result_obj[0] if result_obj else None
+    return json.loads(result)[0]
 
 
 @app.get("/allcustomers")
 def read_all_customer():
     result = crud.myselectAll(mymodels.Customers)
-    # 結果がNoneの場合は空配列を返す
-    if not result:
-        return []
-    # JSON文字列をPythonオブジェクトに変換
-    return json.loads(result)
+    return json.loads(result) if result else []
 
 
 @app.put("/customers")
 def update_customer(customer: Customer):
     values = customer.dict()
-    values_original = values.copy()
-    tmp = crud.myupdate(mymodels.Customers, values)
-    result = crud.myselect(mymodels.Customers, values_original.get("customer_id"))
+    crud.myupdate(mymodels.Customers, values)
+    result = crud.myselect(mymodels.Customers, values.get("customer_id"))
     if not result:
         raise HTTPException(status_code=404, detail="Customer not found")
-    result_obj = json.loads(result)
-    return result_obj[0] if result_obj else None
+    return json.loads(result)[0]
 
 
 @app.delete("/customers")
@@ -131,3 +98,39 @@ def delete_customer(customer_id: str = Query(...)):
 def fetchtest():
     response = requests.get('https://jsonplaceholder.typicode.com/users')
     return response.json()
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from db_control import auth  # JWT系関数を使うため
+from db_control import mymodels  # ユーザーモデルがある場合
+from db_control import crud  # DBからユーザーを取得
+from jose import JWTError
+
+router = APIRouter()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# 仮のユーザー取得関数（ユーザー名で検索）
+def get_user_by_username(username: str):
+    result = crud.myselect(mymodels.Users, username)
+    if result:
+        return result[0]  # パース済みのdictを想定
+    return None
+
+# 🔐 ログインしてJWTトークン発行
+@router.post("/token")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = get_user_by_username(form_data.username)
+    if not user or not auth.verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    access_token = auth.create_access_token(data={"sub": user["username"]})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# 🔒 保護されたルート例
+@router.get("/me")
+def read_users_me(token: str = Depends(oauth2_scheme)):
+    payload = auth.verify_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"username": payload["sub"]}

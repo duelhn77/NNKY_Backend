@@ -50,3 +50,65 @@ def login_user(login: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="パスワードが間違っています。")
 
     return {"message": "ログイン成功", "user_id": user.user_id}
+
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from db_control import auth  # JWT発行関数がここにある
+from sqlalchemy.orm import Session
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@router.post("/token")
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(crud.User).filter(crud.User.email == form_data.username).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="メールアドレスが登録されていません。")
+
+    if not auth.verify_password(form_data.password, user.password):
+        raise HTTPException(status_code=401, detail="パスワードが間違っています。")
+
+    # JWT発行
+    access_token = auth.create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
+from db_control import auth
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+# 🔹 レスポンスモデル（返したいユーザー情報の定義）
+class UserResponse(BaseModel):
+    user_id: int
+    name: str
+    name_kana: str
+    email: str
+    birth_date: date
+
+    class Config:
+        from_attributes = True
+
+# 🔐 拡張した /me
+@router.get("/me", response_model=UserResponse)
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    payload = auth.verify_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    email = payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+
+    # 🔍 DBから該当ユーザーを取得
+    user = db.query(crud.User).filter(crud.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
