@@ -15,3 +15,4 @@ python-multipart==0.0.20
 mysql-connector-python==9.2.0  # ← これを残す
 python-jose==3.4.0  # ← これも残す
 passlib[bcrypt]==1.7.4
+email-validator==2.1.1
