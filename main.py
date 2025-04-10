@@ -48,11 +48,9 @@ class Customer(BaseModel):
     age: int
     gender: str
 
-
 @app.get("/")
 def index():
     return {"message": "FastAPI top page!"}
-
 
 @app.post("/customers")
 def create_customer(customer: Customer):
@@ -61,7 +59,6 @@ def create_customer(customer: Customer):
     result = crud.myselect(mymodels.Customers, values.get("customer_id"))
     return json.loads(result) if result else None
 
-
 @app.get("/customers")
 def read_one_customer(customer_id: str = Query(...)):
     result = crud.myselect(mymodels.Customers, customer_id)
@@ -69,12 +66,10 @@ def read_one_customer(customer_id: str = Query(...)):
         raise HTTPException(status_code=404, detail="Customer not found")
     return json.loads(result)[0]
 
-
 @app.get("/allcustomers")
 def read_all_customer():
     result = crud.myselectAll(mymodels.Customers)
     return json.loads(result) if result else []
-
 
 @app.put("/customers")
 def update_customer(customer: Customer):
@@ -85,7 +80,6 @@ def update_customer(customer: Customer):
         raise HTTPException(status_code=404, detail="Customer not found")
     return json.loads(result)[0]
 
-
 @app.delete("/customers")
 def delete_customer(customer_id: str = Query(...)):
     result = crud.mydelete(mymodels.Customers, customer_id)
@@ -93,12 +87,12 @@ def delete_customer(customer_id: str = Query(...)):
         raise HTTPException(status_code=404, detail="Customer not found")
     return {"customer_id": customer_id, "status": "deleted"}
 
-
 @app.get("/fetchtest")
 def fetchtest():
     response = requests.get('https://jsonplaceholder.typicode.com/users')
     return response.json()
 
+# JWT認証関連
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from db_control import auth  # JWT系関数を使うため
