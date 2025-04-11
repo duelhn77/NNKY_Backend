@@ -127,3 +127,9 @@ def read_users_me(token: str = Depends(oauth2_scheme)):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return {"username": payload["sub"]}
+
+# main.py に追加
+from app import presurvey  # 追加したプレ診断ルーターをインポート
+
+# プレ診断ルーターをアプリケーションに組み込む
+app.include_router(presurvey.router)  # プレ診断関連API

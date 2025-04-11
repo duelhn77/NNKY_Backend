@@ -182,3 +182,101 @@ def delete_reservation(db: Session, reservation_id: int):
         db.commit()
         return reservation_id
     return None
+
+# プレ診断作成
+def create_pre_survey(db: Session, reservation_id: int, age_group: str, item_preparation: bool, concern_parts: str, troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
+    new_pre_survey = PreSurvey(
+        reservation_id=reservation_id,
+        age_group=age_group,
+        item_preparation=item_preparation,
+        concern_parts=concern_parts,
+        troubles=troubles,
+        past_experience=past_experience,
+        consultation_goal=consultation_goal,
+        free_comment=free_comment
+    )
+    db.add(new_pre_survey)
+    db.commit()
+    db.refresh(new_pre_survey)
+    return new_pre_survey
+
+# プレ診断取得
+def get_pre_survey_by_reservation_id(db: Session, reservation_id: int):
+    return db.query(PreSurvey).filter(PreSurvey.reservation_id == reservation_id).first()
+
+# プレ診断更新
+def update_pre_survey(db: Session, survey_id: int, age_group: str, item_preparation: bool, concern_parts: str, troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
+    pre_survey = db.query(PreSurvey).filter(PreSurvey.survey_id == survey_id).first()
+    if pre_survey:
+        pre_survey.age_group = age_group
+        pre_survey.item_preparation = item_preparation
+        pre_survey.concern_parts = concern_parts
+        pre_survey.troubles = troubles
+        pre_survey.past_experience = past_experience
+        pre_survey.consultation_goal = consultation_goal
+        pre_survey.free_comment = free_comment
+        db.commit()
+        db.refresh(pre_survey)
+        return pre_survey
+    return None
+
+# プレ診断削除
+def delete_pre_survey(db: Session, survey_id: int):
+    pre_survey = db.query(PreSurvey).filter(PreSurvey.survey_id == survey_id).first()
+    if pre_survey:
+        db.delete(pre_survey)
+        db.commit()
+        return survey_id
+    return None
+
+# 追加: プレ診断作成
+def create_presurvey(db: Session, reservation_id: int, age_group: str, item_preparation: bool, concern_parts: str,
+                     troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
+    new_presurvey = Presurvey(
+        reservation_id=reservation_id,
+        age_group=age_group,
+        item_preparation=item_preparation,
+        concern_parts=concern_parts,
+        troubles=troubles,
+        past_experience=past_experience,
+        consultation_goal=consultation_goal,
+        free_comment=free_comment
+    )
+    db.add(new_presurvey)
+    db.commit()
+    db.refresh(new_presurvey)
+    return new_presurvey
+
+# 追加: プレ診断情報取得
+def get_presurveys(db: Session):
+    return db.query(Presurvey).all()
+
+# 追加: プレ診断IDでプレ診断を取得
+def get_presurvey_by_id(db: Session, survey_id: int):
+    return db.query(Presurvey).filter(Presurvey.survey_id == survey_id).first()
+
+# 追加: プレ診断更新
+def update_presurvey(db: Session, survey_id: int, age_group: str, item_preparation: bool, concern_parts: str,
+                     troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
+    presurvey = db.query(Presurvey).filter(Presurvey.survey_id == survey_id).first()
+    if presurvey:
+        presurvey.age_group = age_group
+        presurvey.item_preparation = item_preparation
+        presurvey.concern_parts = concern_parts
+        presurvey.troubles = troubles
+        presurvey.past_experience = past_experience
+        presurvey.consultation_goal = consultation_goal
+        presurvey.free_comment = free_comment
+        db.commit()
+        db.refresh(presurvey)
+        return presurvey
+    return None
+
+# 追加: プレ診断削除
+def delete_presurvey(db: Session, survey_id: int):
+    presurvey = db.query(Presurvey).filter(Presurvey.survey_id == survey_id).first()
+    if presurvey:
+        db.delete(presurvey)
+        db.commit()
+        return survey_id
+    return None

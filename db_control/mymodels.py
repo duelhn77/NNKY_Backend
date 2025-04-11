@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Date, ForeignKey
+from sqlalchemy import Column, String, Integer, Date, ForeignKey, Boolean, Text
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -25,6 +25,24 @@ class Reservation(Base):
 
     # 予約情報に紐づくユーザー情報
     user = relationship("User", back_populates="reservations")
+    
+    # 予約情報に紐づくプレ診断情報
+    presurveys = relationship("Presurvey", back_populates="reservation")
+
+class Presurvey(Base):
+    __tablename__ = 'presurvey'
+    survey_id = Column(Integer, primary_key=True, autoincrement=True)
+    reservation_id = Column(Integer, ForeignKey('reservation.reservation_id'))
+    age_group = Column(String(255))
+    item_preparation = Column(Boolean)
+    concern_parts = Column(Text)
+    troubles = Column(Text)
+    past_experience = Column(Text)
+    consultation_goal = Column(Text)
+    free_comment = Column(Text)
+
+    # 予約情報とのリレーション
+    reservation = relationship("Reservation", back_populates="presurveys")
 
 class Customers(Base):
     __tablename__ = 'customers'
