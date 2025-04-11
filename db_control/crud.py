@@ -1,17 +1,11 @@
-# uname() error回避
 import platform
-print("platform", platform.uname())
-
-
 from sqlalchemy import create_engine, insert, delete, update, select
-import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 import json
 import pandas as pd
 from passlib.hash import bcrypt
 from db_control.connect import engine
-from db_control.mymodels import Customers
-from db_control.mymodels import User
+from db_control.mymodels import Customers, User, Reservation  # Reservationテーブルをインポート
 from sqlalchemy.orm import Session
 from datetime import date
 
@@ -39,7 +33,6 @@ def create_user(db: Session, name: str, name_kana: str, email: str, password: st
     db.commit()
     db.refresh(new_user)
     return new_user
-
 
 
 def myinsert(mymodel, values):
@@ -146,3 +139,46 @@ def mydelete(mymodel, customer_id):
     # セッションを閉じる
     session.close()
     return customer_id + " is deleted"
+
+
+# 追加した予約関連の操作
+
+# 予約作成
+def create_reservation(db: Session, user_id: int, schedule_id: int, consultation_style: str):
+    new_reservation = Reservation(
+        user_id=user_id,
+        schedule_id=schedule_id,
+        consultation_style=consultation_style
+    )
+    db.add(new_reservation)
+    db.commit()
+    db.refresh(new_reservation)
+    return new_reservation
+
+# 予約一覧取得
+def get_reservations(db: Session):
+    return db.query(Reservation).all()
+
+# 予約IDで予約を取得
+def get_reservation_by_id(db: Session, reservation_id: int):
+    return db.query(Reservation).filter(Reservation.reservation_id == reservation_id).first()
+
+# 予約更新
+def update_reservation(db: Session, reservation_id: int, schedule_id: int, consultation_style: str):
+    reservation = db.query(Reservation).filter(Reservation.reservation_id == reservation_id).first()
+    if reservation:
+        reservation.schedule_id = schedule_id
+        reservation.consultation_style = consultation_style
+        db.commit()
+        db.refresh(reservation)
+        return reservation
+    return None
+
+# 予約削除
+def delete_reservation(db: Session, reservation_id: int):
+    reservation = db.query(Reservation).filter(Reservation.reservation_id == reservation_id).first()
+    if reservation:
+        db.delete(reservation)
+        db.commit()
+        return reservation_id
+    return None
