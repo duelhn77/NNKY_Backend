@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends  # Dependsを追加
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -8,6 +8,7 @@ import json
 # ルーターのインポート
 from app import user
 from app.quickdiagnose import router as quickdiagnose_router
+from app import reservation  # reservationルーターをインポート
 
 # DB操作用
 from db_control import crud, mymodels
@@ -37,6 +38,7 @@ app.add_middleware(
 # 🔗 各種ルーターを登録
 app.include_router(user.router)                # ユーザー登録・ログイン
 app.include_router(quickdiagnose_router)       # クイック診断
+app.include_router(reservation.router)         # 予約管理
 
 # -------------------------------------
 # 🧪 以下は Practical オリジナル機能（顧客管理）
@@ -93,14 +95,11 @@ def fetchtest():
     return response.json()
 
 # JWT認証関連
-from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from db_control import auth  # JWT系関数を使うため
 from db_control import mymodels  # ユーザーモデルがある場合
 from db_control import crud  # DBからユーザーを取得
 from jose import JWTError
-
-router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -112,7 +111,7 @@ def get_user_by_username(username: str):
     return None
 
 # 🔐 ログインしてJWTトークン発行
-@router.post("/token")
+@app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user_by_username(form_data.username)
     if not user or not auth.verify_password(form_data.password, user["hashed_password"]):
@@ -122,7 +121,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 
 # 🔒 保護されたルート例
-@router.get("/me")
+@app.get("/me")
 def read_users_me(token: str = Depends(oauth2_scheme)):
     payload = auth.verify_access_token(token)
     if not payload:
