@@ -9,6 +9,8 @@ import json
 from app import user
 from app.quickdiagnose import router as quickdiagnose_router
 from app import reservation  # reservationルーターをインポート
+from app import course  # courseルーターをインポート
+from app import presurvey  # 追加したプレ診断ルーターをインポート
 
 # DB操作用
 from db_control import crud, mymodels
@@ -39,6 +41,8 @@ app.add_middleware(
 app.include_router(user.router)                # ユーザー登録・ログイン
 app.include_router(quickdiagnose_router)       # クイック診断
 app.include_router(reservation.router)         # 予約管理
+app.include_router(course.router)              # 追加したcourseルーター
+app.include_router(presurvey.router)           # プレ診断関連API
 
 # -------------------------------------
 # 🧪 以下は Practical オリジナル機能（顧客管理）
@@ -127,9 +131,3 @@ def read_users_me(token: str = Depends(oauth2_scheme)):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return {"username": payload["sub"]}
-
-# main.py に追加
-from app import presurvey  # 追加したプレ診断ルーターをインポート
-
-# プレ診断ルーターをアプリケーションに組み込む
-app.include_router(presurvey.router)  # プレ診断関連API
