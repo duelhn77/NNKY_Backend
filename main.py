@@ -11,6 +11,7 @@ from app.quickdiagnose import router as quickdiagnose_router
 from app import reservation  # reservationルーターをインポート
 from app import course  # courseルーターをインポート
 from app import presurvey  # 追加したプレ診断ルーターをインポート
+from app import schedule  # 追加したscheduleルーターをインポート
 
 # DB操作用
 from db_control import crud, mymodels
@@ -43,6 +44,7 @@ app.include_router(quickdiagnose_router)       # クイック診断
 app.include_router(reservation.router)         # 予約管理
 app.include_router(course.router)              # 追加したcourseルーター
 app.include_router(presurvey.router)           # プレ診断関連API
+app.include_router(schedule.router)            # 追加したscheduleルーター
 
 # -------------------------------------
 # 🧪 以下は Practical オリジナル機能（顧客管理）

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Date, ForeignKey, Boolean
+from sqlalchemy import Column, String, Integer, Text, Date, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -26,13 +26,23 @@ class Course(Base):
     description = Column(Text)
 
     # コースと他のモデルとのリレーションを必要に応じて追加できます
+    schedules = relationship("Schedule", backref="course")
+
+# パートナー（例）
+class Partner(Base):
+    __tablename__ = 'partner'
+    partner_id = Column(Integer, primary_key=True)
+    partner_name = Column(String(255))
+
+    # スケジュール情報とのリレーション
+    schedules = relationship("Schedule", backref="partner")
 
 # 予約モデル
 class Reservation(Base):
     __tablename__ = 'reservation'
     reservation_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user.user_id'))
-    schedule_id = Column(Integer)
+    schedule_id = Column(Integer, ForeignKey('schedule.schedule_id'))
     consultation_style = Column(String(255))
 
     user = relationship("User", back_populates="reservations")
@@ -52,6 +62,20 @@ class Presurvey(Base):
     free_comment = Column(Text)
 
     reservation = relationship("Reservation", back_populates="presurveys")
+
+# スケジュールモデル（追加）
+class Schedule(Base):
+    __tablename__ = 'schedule'
+    schedule_id = Column(Integer, primary_key=True, autoincrement=True)
+    course_id = Column(Integer, ForeignKey('course.course_id'))  # コースID
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+    reservation_status = Column(String(20))  # 例: 'open', 'closed', 'booked' など
+    partner_id = Column(Integer, ForeignKey('partner.partner_id'))  # パートナーID
+
+    # リレーション
+    course = relationship("Course", backref="schedules")
+    partner = relationship("Partner", backref="schedules")
 
 # その他のモデル（Customers, Items, Purchases, PurchaseDetails）も同様に定義されている
 class Customers(Base):
