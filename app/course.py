@@ -8,10 +8,9 @@ from db_control.mymodels import Course  # 正しいパスでインポート
 
 router = APIRouter()
 
-# コース作成用のスキーマ
+# コース作成用のスキーマ（descriptionを削除）
 class CourseCreate(BaseModel):
     course_name: str
-    description: str
 
 # コース取得用のレスポンススキーマ
 class CourseResponse(BaseModel):
@@ -28,7 +27,7 @@ def create_course(course: CourseCreate, db: Session = Depends(get_db)):
     # 新しいコースのインスタンスを作成
     new_course = Course(
         course_name=course.course_name,
-        description=course.description
+        description=""  # descriptionは空文字で挿入
     )
     db.add(new_course)
     db.commit()

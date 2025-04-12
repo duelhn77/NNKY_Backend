@@ -11,7 +11,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     name = Column(String)
     name_kana = Column(String)
-    email = Column(String, unique=True)
+    email = Column(String, unique=True)  # ここはemailでログイン
     password = Column(String)
     birth_date = Column(Date)  # 'Date'型を使う
 
@@ -23,10 +23,10 @@ class Course(Base):
     __tablename__ = 'course'
     course_id = Column(Integer, primary_key=True, autoincrement=True)
     course_name = Column(String(255))
-    description = Column(Text)
+    # description = Column(Text)  # この行を削除しました
 
-    # コースと他のモデルとのリレーションを必要に応じて追加できます
-    schedules = relationship("Schedule", backref="course")
+    # スケジュール情報とのリレーション
+    schedules = relationship("Schedule", back_populates="course")  # back_populatesで反対側のリレーションを指定
 
 # パートナー（例）
 class Partner(Base):
@@ -35,7 +35,7 @@ class Partner(Base):
     partner_name = Column(String(255))
 
     # スケジュール情報とのリレーション
-    schedules = relationship("Schedule", backref="partner")
+    schedules = relationship("Schedule", back_populates="partner")  # back_populatesで反対側のリレーションを指定
 
 # 予約モデル
 class Reservation(Base):
@@ -63,7 +63,7 @@ class Presurvey(Base):
 
     reservation = relationship("Reservation", back_populates="presurveys")
 
-# スケジュールモデル（追加）
+# スケジュールモデル（修正）
 class Schedule(Base):
     __tablename__ = 'schedule'
     schedule_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -74,8 +74,8 @@ class Schedule(Base):
     partner_id = Column(Integer, ForeignKey('partner.partner_id'))  # パートナーID
 
     # リレーション
-    course = relationship("Course", backref="schedules")
-    partner = relationship("Partner", backref="schedules")
+    course = relationship("Course", back_populates="schedules")  # Courseとのリレーション
+    partner = relationship("Partner", back_populates="schedules")  # Partnerとのリレーション
 
 # その他のモデル（Customers, Items, Purchases, PurchaseDetails）も同様に定義されている
 class Customers(Base):

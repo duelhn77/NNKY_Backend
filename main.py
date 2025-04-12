@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException, Query, Depends  # Dependsを追加
+from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse  # リダイレクトを追加
 from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import os
 import requests
 import json
@@ -8,14 +10,18 @@ import json
 # ルーターのインポート
 from app import user
 from app.quickdiagnose import router as quickdiagnose_router
-from app import reservation  # reservationルーターをインポート
-from app import course  # courseルーターをインポート
-from app import presurvey  # 追加したプレ診断ルーターをインポート
-from app import schedule  # 追加したscheduleルーターをインポート
+from app import reservation
+from app import course
+from app import presurvey
+from app import schedule
 
 # DB操作用
 from db_control import crud, mymodels
 from db_control.create_tables import init_db
+from db_control import auth  # JWT系関数を使うため
+from db_control import mymodels  # ユーザーモデルがある場合
+from db_control import crud  # DBからユーザーを取得
+from jose import JWTError
 
 # アプリケーション作成
 app = FastAPI()
@@ -46,9 +52,9 @@ app.include_router(course.router)              # 追加したcourseルーター
 app.include_router(presurvey.router)           # プレ診断関連API
 app.include_router(schedule.router)            # 追加したscheduleルーター
 
-# -------------------------------------
+# ----------------------
 # 🧪 以下は Practical オリジナル機能（顧客管理）
-# -------------------------------------
+# ----------------------
 
 class Customer(BaseModel):
     customer_id: str
@@ -101,29 +107,27 @@ def fetchtest():
     return response.json()
 
 # JWT認証関連
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from db_control import auth  # JWT系関数を使うため
-from db_control import mymodels  # ユーザーモデルがある場合
-from db_control import crud  # DBからユーザーを取得
-from jose import JWTError
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # 仮のユーザー取得関数（ユーザー名で検索）
-def get_user_by_username(username: str):
-    result = crud.myselect(mymodels.Users, username)
+def get_user_by_email(email: str):
+    result = crud.myselect(mymodels.User, email)  # emailで検索するよう修正
     if result:
         return result[0]  # パース済みのdictを想定
     return None
 
 # 🔐 ログインしてJWTトークン発行
-@app.post("/token")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = get_user_by_username(form_data.username)
-    if not user or not auth.verify_password(form_data.password, user["hashed_password"]):
+@app.get("/login")  # 変更：/loginにアクセスしたらリダイレクト
+async def login_redirect():
+    return RedirectResponse(url="/token")  # /token にリダイレクトする
+
+@app.post("/token")  # /tokenでJWTトークンを発行
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = get_user_by_email(form_data.username)  # emailで取得する
+    if not user or not auth.verify_password(form_data.password, user["password"]):  # 修正：passwordの検証
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    access_token = auth.create_access_token(data={"sub": user["username"]})
+    access_token = auth.create_access_token(data={"sub": user["email"]})  # emailをトークンに
     return {"access_token": access_token, "token_type": "bearer"}
 
 # 🔒 保護されたルート例
@@ -132,4 +136,4 @@ def read_users_me(token: str = Depends(oauth2_scheme)):
     payload = auth.verify_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
-    return {"username": payload["sub"]}
+    return {"email": payload["sub"]}  # emailを返すよう修正
