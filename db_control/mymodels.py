@@ -1,9 +1,11 @@
-from sqlalchemy import Column, String, Integer, Date, ForeignKey, Boolean, Text
+from sqlalchemy import Column, String, Integer, Text, Date, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
+# Baseをインポート
 Base = declarative_base()
 
+# Userモデル
 class User(Base):
     __tablename__ = 'user'
     user_id = Column(Integer, primary_key=True)
@@ -11,11 +13,21 @@ class User(Base):
     name_kana = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
-    birth_date = Column(Date)
+    birth_date = Column(Date)  # 'Date'型を使う
 
     # 予約情報とのリレーション
     reservations = relationship("Reservation", back_populates="user")
 
+# コースモデル
+class Course(Base):
+    __tablename__ = 'course'
+    course_id = Column(Integer, primary_key=True, autoincrement=True)
+    course_name = Column(String(255))
+    description = Column(Text)
+
+    # コースと他のモデルとのリレーションを必要に応じて追加できます
+
+# 予約モデル
 class Reservation(Base):
     __tablename__ = 'reservation'
     reservation_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -23,12 +35,10 @@ class Reservation(Base):
     schedule_id = Column(Integer)
     consultation_style = Column(String(255))
 
-    # 予約情報に紐づくユーザー情報
     user = relationship("User", back_populates="reservations")
-    
-    # 予約情報に紐づくプレ診断情報
     presurveys = relationship("Presurvey", back_populates="reservation")
 
+# プレ診断モデル
 class Presurvey(Base):
     __tablename__ = 'presurvey'
     survey_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -41,9 +51,9 @@ class Presurvey(Base):
     consultation_goal = Column(Text)
     free_comment = Column(Text)
 
-    # 予約情報とのリレーション
     reservation = relationship("Reservation", back_populates="presurveys")
 
+# その他のモデル（Customers, Items, Purchases, PurchaseDetails）も同様に定義されている
 class Customers(Base):
     __tablename__ = 'customers'
     customer_id = Column(String(10), primary_key=True)
