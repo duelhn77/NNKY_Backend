@@ -103,3 +103,15 @@ class PurchaseDetails(Base):
     purchase_id = Column(String(10))
     item_id = Column(String(10))
     quantity = Column(Integer)
+
+
+# なりさん追加（4/13）
+class QuickDiagnosis(Base):
+    __tablename__ = 'quickdiagnosis'
+    quick_diagnosis_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('user.user_id'), nullable=True)  # ログインしていない場合null
+    result_summary = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Optional: ユーザー情報を取得するリレーション（必要に応じて）
+    user = relationship("User")
