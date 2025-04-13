@@ -10,13 +10,12 @@ router = APIRouter()
 
 # コース作成用のスキーマ（descriptionを削除）
 class CourseCreate(BaseModel):
-    course_name: str
+    course_name: str  # course_nameのみ
 
 # コース取得用のレスポンススキーマ
 class CourseResponse(BaseModel):
     course_id: int
     course_name: str
-    description: str
 
     class Config:
         orm_mode = True  # SQLAlchemyのモデルをPydanticモデルに変換
@@ -26,8 +25,7 @@ class CourseResponse(BaseModel):
 def create_course(course: CourseCreate, db: Session = Depends(get_db)):
     # 新しいコースのインスタンスを作成
     new_course = Course(
-        course_name=course.course_name,
-        description=""  # descriptionは空文字で挿入
+        course_name=course.course_name
     )
     db.add(new_course)
     db.commit()
