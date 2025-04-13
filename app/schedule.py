@@ -38,3 +38,21 @@ def get_schedule(schedule_id: int, db: Session = Depends(get_db)):
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found.")
     return schedule
+
+class ScheduleUpdateStatus(BaseModel):
+    reservation_status: str  # 例: 'open' or 'booked'
+
+@router.put("/schedules/{schedule_id}")
+def update_schedule_status(
+    schedule_id: int,
+    status: ScheduleUpdateStatus,
+    db: Session = Depends(get_db)
+):
+    schedule = db.query(Schedule).filter(Schedule.schedule_id == schedule_id).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found.")
+
+    schedule.reservation_status = status.reservation_status
+    db.commit()
+    db.refresh(schedule)
+    return {"message": "Schedule status updated", "schedule_id": schedule_id}
