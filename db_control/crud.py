@@ -8,6 +8,7 @@ from db_control.connect import engine
 from db_control.mymodels import Customers, User, Reservation  # Reservationテーブルをインポート
 from sqlalchemy.orm import Session
 from datetime import date
+from db_control.mymodels import QuickDiagnosis
 
 
 # Frontendとのつなぎ込みで追加（4/10 なりさん）
@@ -280,3 +281,14 @@ def delete_presurvey(db: Session, survey_id: int):
         db.commit()
         return survey_id
     return None
+
+# ✅ なりさん追加（4/13）
+def create_quick_diagnosis(db: Session, user_id: int, result_summary: str):
+    new_diagnosis = QuickDiagnosis(
+        user_id=user_id,
+        result_summary=result_summary
+    )
+    db.add(new_diagnosis)
+    db.commit()
+    db.refresh(new_diagnosis)
+    return new_diagnosis
