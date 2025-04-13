@@ -2,6 +2,21 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
+# コース作成用のスキーマ
+class CourseCreate(BaseModel):
+    course_name: str
+    description: str  # ここでdescriptionを追加
+
+# コース取得用のレスポンススキーマ
+class CourseResponse(BaseModel):
+    course_id: int
+    course_name: str
+
+
+    class Config:
+        orm_mode = True  # SQLAlchemyのモデルをPydanticモデルに変換
+
+
 # スケジュール作成用のスキーマ
 class ScheduleCreate(BaseModel):
     course_id: int
