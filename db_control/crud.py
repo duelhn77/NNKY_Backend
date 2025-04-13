@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 from db_control.mymodels import QuickDiagnosis
 import sqlalchemy
-from db_control.mymodels import PreSurvey, Presurvey
+from db_control.mymodels import Presurvey
 
 
 
@@ -190,7 +190,7 @@ def delete_reservation(db: Session, reservation_id: int):
 
 # プレ診断作成
 def create_pre_survey(db: Session, reservation_id: int, age_group: str, item_preparation: bool, concern_parts: str, troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
-    new_pre_survey = PreSurvey(
+    new_pre_survey = Presurvey(
         reservation_id=reservation_id,
         age_group=age_group,
         item_preparation=item_preparation,
@@ -207,11 +207,11 @@ def create_pre_survey(db: Session, reservation_id: int, age_group: str, item_pre
 
 # プレ診断取得
 def get_pre_survey_by_reservation_id(db: Session, reservation_id: int):
-    return db.query(PreSurvey).filter(PreSurvey.reservation_id == reservation_id).first()
+    return db.query(Presurvey).filter(Presurvey.reservation_id == reservation_id).first()
 
 # プレ診断更新
 def update_pre_survey(db: Session, survey_id: int, age_group: str, item_preparation: bool, concern_parts: str, troubles: str, past_experience: str, consultation_goal: str, free_comment: str):
-    pre_survey = db.query(PreSurvey).filter(PreSurvey.survey_id == survey_id).first()
+    pre_survey = db.query(Presurvey).filter(Presurvey.survey_id == survey_id).first()
     if pre_survey:
         pre_survey.age_group = age_group
         pre_survey.item_preparation = item_preparation
@@ -227,7 +227,7 @@ def update_pre_survey(db: Session, survey_id: int, age_group: str, item_preparat
 
 # プレ診断削除
 def delete_pre_survey(db: Session, survey_id: int):
-    pre_survey = db.query(PreSurvey).filter(PreSurvey.survey_id == survey_id).first()
+    pre_survey = db.query(Presurvey).filter(Presurvey.survey_id == survey_id).first()
     if pre_survey:
         db.delete(pre_survey)
         db.commit()
