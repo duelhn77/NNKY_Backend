@@ -9,6 +9,10 @@ from db_control.mymodels import Customers, User, Reservation  # Reservationテ�
 from sqlalchemy.orm import Session
 from datetime import date
 from db_control.mymodels import QuickDiagnosis
+import sqlalchemy
+from db_control.mymodels import PreSurvey, Presurvey
+
+
 
 
 # Frontendとのつなぎ込みで追加（4/10 なりさん）
