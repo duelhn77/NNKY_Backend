@@ -12,7 +12,6 @@ class CourseResponse(BaseModel):
     course_id: int
     course_name: str
 
-
     class Config:
         orm_mode = True  # SQLAlchemyのモデルをPydanticモデルに変換
 
@@ -33,6 +32,15 @@ class ScheduleResponse(BaseModel):
     end_time: datetime
     reservation_status: str
     partner_id: int
+
+    class Config:
+        orm_mode = True  # SQLAlchemyのモデルをPydanticモデルに変換
+
+
+# パートナー取得用のレスポンススキーマ
+class PartnerResponse(BaseModel):  # PartnerResponseクラスを追加
+    partner_id: int
+    name: str  # partner_name → nameに変更
 
     class Config:
         orm_mode = True  # SQLAlchemyのモデルをPydanticモデルに変換
