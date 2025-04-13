@@ -4,6 +4,7 @@ from db_control.connect_MySQL import get_db
 from db_control import crud  # 既存のCRUD操作を使用
 from pydantic import BaseModel
 from typing import List
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
@@ -37,6 +38,10 @@ def create_reservation(
     if not new_reservation:
         raise HTTPException(status_code=400, detail="Failed to create reservation.")
     return new_reservation
+
+@router.options("/{rest_of_path:path}")
+async def options_handler():
+    return JSONResponse(status_code=200)
 
 # 予約一覧取得API
 @router.get("/reservations", response_model=List[ReservationResponse])
