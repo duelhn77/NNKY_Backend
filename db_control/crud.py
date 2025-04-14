@@ -8,6 +8,7 @@ from db_control.connect import engine
 from db_control.mymodels import Customers, User, Reservation  # Reservationテーブルをインポート
 from sqlalchemy.orm import Session
 from datetime import date
+from db_control.mymodels import Presurvey
 
 
 # Frontendとのつなぎ込みで追加（4/10 なりさん）

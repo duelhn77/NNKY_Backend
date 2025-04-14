@@ -6,6 +6,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import os
 import requests
 import json
+# 4/14のな追記
+from dotenv import load_dotenv
+load_dotenv()
 
 # ルーターのインポート
 from app import user
