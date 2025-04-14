@@ -8,6 +8,7 @@ from db_control.connect import engine
 from db_control.mymodels import Customers, User, Reservation  # Reservationテーブルをインポート
 from sqlalchemy.orm import Session
 from datetime import date
+from db_control import mymodels as models
 
 from db_control.mymodels import QuickDiagnosis
 import sqlalchemy
@@ -296,3 +297,8 @@ def create_quick_diagnosis(db: Session, user_id: int, result_summary: str):
     db.commit()
     db.refresh(new_diagnosis)
     return new_diagnosis
+
+def get_reservations_by_user_id(db: Session, user_id: int):
+    return db.query(models.Reservation).filter(models.Reservation.user_id == user_id).options(
+        sqlalchemy.orm.joinedload(models.Reservation.schedule)
+    ).all()
