@@ -17,6 +17,7 @@ from app import reservation
 from app import course
 from app import presurvey
 from app import schedule
+from app import partner  # パートナーAPIをインポート
 
 # DB操作用
 from db_control import crud, mymodels
@@ -51,9 +52,10 @@ app.add_middleware(
 app.include_router(user.router)                # ユーザー登録・ログイン
 app.include_router(quickdiagnose_router)       # クイック診断
 app.include_router(reservation.router)         # 予約管理
-app.include_router(course.router)              # 追加したcourseルーター
+app.include_router(course.router)              # コースルーター
 app.include_router(presurvey.router)           # プレ診断関連API
-app.include_router(schedule.router)            # 追加したscheduleルーター
+app.include_router(schedule.router)            # スケジュールルーター
+app.include_router(partner.router)             # パートナーAPIを追加
 
 # ----------------------
 # 🧪 以下は Practical オリジナル機能（顧客管理）
