@@ -44,6 +44,7 @@ class Reservation(Base):
     user_id = Column(Integer, ForeignKey('user.user_id'))
     schedule_id = Column(Integer, ForeignKey('schedule.schedule_id'))
     consultation_style = Column(String(255))
+    schedule = relationship("Schedule")
 
     user = relationship("User", back_populates="reservations")
     presurveys = relationship("Presurvey", back_populates="reservation")

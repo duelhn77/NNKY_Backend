@@ -5,6 +5,8 @@ from db_control import crud  # 既存のCRUD操作を使用
 from pydantic import BaseModel
 from typing import List
 from fastapi.responses import JSONResponse
+from datetime import datetime
+
 
 router = APIRouter()
 
@@ -14,12 +16,21 @@ class ReservationCreate(BaseModel):
     schedule_id: int
     consultation_style: str
 
+class ScheduleBase(BaseModel):
+    schedule_id: int
+    start_time: datetime
+    end_time: datetime
+
+    class Config:
+        orm_mode = True
+
 # 予約情報を取得するレスポンス用スキーマ
 class ReservationResponse(BaseModel):
     reservation_id: int
     user_id: int
     schedule_id: int
     consultation_style: str
+    schedule: ScheduleBase
 
     class Config:
         orm_mode = True
@@ -82,3 +93,10 @@ def delete_reservation(reservation_id: int, db: Session = Depends(get_db)):
     if not deleted_reservation_id:
         raise HTTPException(status_code=404, detail="Reservation not found.")
     return {"message": f"Reservation {reservation_id} deleted"}
+
+@router.get("/reservations/user/{user_id}", response_model=List[ReservationResponse])
+def get_reservations_by_user(user_id: int, db: Session = Depends(get_db)):
+    reservations = crud.get_reservations_by_user_id(db, user_id=user_id)
+    if not reservations:
+        raise HTTPException(status_code=404, detail="No reservations found for user.")
+    return reservations
